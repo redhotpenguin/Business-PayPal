@@ -1,24 +1,29 @@
 Revision history for Perl extension Business::PayPal.
 
+0.05
+    - update Certificate
+    - standardize directory layout
+    - modernize tests
+
 0.04  Wed Aug 04 23:28:00 2010
     - fix incorrect synopsis for new() method with id
     - update default cert
     - encapsulate default cert in package variable to prevent bugs with
       DATA filehandle being re-opened in mod_perl
     - support multiple currency, default to USD [CHISEL]
-    - Fix to button code to allow sandbox testing [william@knowmad.com] 
+    - Fix to button code to allow sandbox testing [william@knowmad.com]
 
 0.03  Thu Dec 25 01:00:00 2008
     - fix typo in usage for button_image
     - new maintainer PHRED
 
 0.02  Sun Aug 25 23:23:04 2002
-	- fixed Makefile.PL so that CPAN.pm will install
+    - fixed Makefile.PL so that CPAN.pm will install
           prerequisite modules.  Thanks to Rick Myers for
           the patch which prompted me to get off my ass and
           fix this.
 
 0.01  Sat Mar 30 12:02:44 2002
-	- original version; created by h2xs 1.21 with options
-		-AX -n Business::PayPal
+    - original version; created by h2xs 1.21 with options
+        -AX -n Business::PayPal
 
