@@ -1,6 +1,7 @@
 Revision history for Perl extension Business::PayPal.
 
     - stop cloning in constructor
+    - eliminate the dependency on CGI by manually creating the button
 
 0.05 July 19 2012
     - update Certificate

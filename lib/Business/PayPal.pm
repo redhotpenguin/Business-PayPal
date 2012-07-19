@@ -8,7 +8,6 @@ our $VERSION = '0.05';
 
 use Net::SSLeay 1.14;
 use Digest::MD5 qw(md5_hex);
-use CGI;
 
 our $Cert = <<CERT;
 -----BEGIN CERTIFICATE-----
@@ -82,11 +81,7 @@ sub button {
     my %buttonparam = (
         cmd                 => '_ext-enter',
         redirect_cmd        => '_xclick',
-        button_image        => CGI::image_button(
-            -name => 'submit',
-            -src => 'http://images.paypal.com/images/x-click-but01.gif',
-            -alt => 'Make payments with PayPal',
-            ),
+        button_image        => qq{<input type="image" name="submit" src="http://images.paypal.com/images/x-click-but01.gif" alt="Make payments with PayPal" />},
         business            => undef,
         item_name           => undef,
         item_number         => undef,
@@ -121,21 +116,18 @@ sub button {
         @_,
     );
     my $key;
-    my $content = CGI::start_form( -method => 'POST',
-        -action => $self->{'address'},
-                                 );
-    foreach (keys %buttonparam) {
-        next unless defined $buttonparam{$_};
-        if ($_ eq 'button_image') {
-            $content .= $buttonparam{$_};
+    my $content = qq{<form method="post" action="$self->{'address'}" enctype="multipart/form-data">};
+
+    foreach my $param (keys %buttonparam) {
+        next unless defined $buttonparam{$param};
+        if ($param eq 'button_image') {
+            $content .= $buttonparam{$param};
         }
         else {
-            $content .= CGI::hidden( -name => $_,
-                                     -default => $buttonparam{$_},
-                                   );
+            $content .= qq{<input type="hidden" name="$param" value="$buttonparam{$param}" />};
         }
     }
-    $content .= CGI::endform();
+    $content .= qq{</form>};
     return $content;
 }
 

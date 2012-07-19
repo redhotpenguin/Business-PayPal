@@ -7,7 +7,6 @@ WriteMakefile(
     'PREREQ_PM'                => {
                                'Net::SSLeay' => 1.14,
                                'Digest::MD5' => 0,
-                               'CGI'         => 0,
                                'Test::More'  => 0,
                           }, # e.g., Module::Name => 1.1
 ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
