@@ -87,7 +87,7 @@ sub button {
             -name => 'submit',
             -src => 'http://images.paypal.com/images/x-click-but01.gif',
             -alt => 'Make payments with PayPal',
-            ), 
+            ),
         business            => undef,
         item_name           => undef,
         item_number         => undef,
@@ -128,7 +128,7 @@ sub button {
     foreach (keys %buttonparam) {
         next unless defined $buttonparam{$_};
         if ($_ eq 'button_image') {
-            $content .= $buttonparam{$_}; 
+            $content .= $buttonparam{$_};
         }
         else {
             $content .= CGI::hidden( -name => $_,
@@ -151,7 +151,7 @@ sub ipnvalidate {
     my $query = shift;
     $$query{cmd} = '_notify-validate';
     my $id = $self->{id};
-    my ($succ, $reason) = $self->postpaypal($query); 
+    my ($succ, $reason) = $self->postpaypal($query);
     return (wantarray ? ($id, $reason) : $id)
         if $succ;
     return (wantarray ? (undef, $reason) : undef);
@@ -177,14 +177,14 @@ sub postpaypal {
         ($site, $port) = ($address[0], '443');
     }
     $path = $address[1];
-    my ($page, 
-        $response, 
-        $headers, 
-        $ppcert, 
-        ) = Net::SSLeay::post_https3($site, 
-                                         $port, 
-                                         $path, 
-                                         '', 
+    my ($page,
+        $response,
+        $headers,
+        $ppcert,
+        ) = Net::SSLeay::post_https3($site,
+                                         $port,
+                                         $path,
+                                         '',
                                          Net::SSLeay::make_form(%$query));
 
 
@@ -200,7 +200,7 @@ sub postpaypal {
 
     chomp $ppx509;
     chomp $ppcertcontent;
-    return (wantarray ? (undef, "PayPal cert failed to match: $ppx509\n$Cert") : undef)  
+    return (wantarray ? (undef, "PayPal cert failed to match: $ppx509\n$Cert") : undef)
         unless $Cert eq $ppx509;
     return (wantarray ? (undef, "PayPal cert contents failed to match $ppcertcontent") : undef)        unless $ppcertcontent eq "$Certcontent";
     return (wantarray ? (undef, 'PayPal says transaction INVALID') : undef)
@@ -211,7 +211,7 @@ sub postpaypal {
     return (wantarray ? (undef, "Bad stuff happened") :undef);
 }
 
- 
+
 
 1;
 
@@ -228,8 +228,8 @@ Notification that is sent when PayPal processes a payment.
 
 =head1 SYNOPSIS
 
-  To generate a PayPal button for use on your site
-  Include something like the following in your CGI
+To generate a PayPal button for use on your site
+Include something like the following in your CGI
 
   use Business::PayPal;
   my $paypal = Business::PayPal->new;
@@ -244,20 +244,20 @@ Notification that is sent when PayPal processes a payment.
   );
   my $id = $paypal->id;
 
-  #store $id somewhere so we can get it back again later
-  #store current context with $id
-  #Apache::Session works well for this
-  #print button to the browser
-  #note, button is a CGI form, enclosed in <form></form> tags
+store $id somewhere so we can get it back again later
+store current context with $id
+Apache::Session works well for this
+print button to the browser
+note, button is a CGI form, enclosed in <form></form> tags
 
 
 
-  To validate the Instant Payment Notification from PayPal for the 
-  button used above include something like the following in your 
-  'notify_url' CGI.
+To validate the Instant Payment Notification from PayPal for the
+button used above include something like the following in your
+'notify_url' CGI.
 
   use CGI;
-  my $query = new CGI;
+  my $query = CGI->new;
   my %query = $query->Vars;
   my $id = $query{custom};
   my $paypal = Business::PayPal->new(id => $id);
@@ -265,18 +265,18 @@ Notification that is sent when PayPal processes a payment.
   die "PayPal failed: $reason" unless $txnstatus;
   my $money = $query{payment_gross};
   my $paystatus = $query{payment_status};
-  
-  #check if paystatus eq 'Completed'
-  #check if $money is the ammount you expected
-  #save payment status information to store as $id
+
+check if paystatus eq 'Completed'
+check if $money is the ammount you expected
+save payment status information to store as $id
 
 
-  To tell the user if their payment succeeded or not, use something like
-  the following in the CGI pointed to by the 'return' parameter in your
-  PayPal button.
+To tell the user if their payment succeeded or not, use something like
+the following in the CGI pointed to by the 'return' parameter in your
+PayPal button.
 
   use CGI;
-  my $query = new CGI;
+  my $query = CGI->new;
   my $id = $query{custom};
 
   #get payment status from store for $id
@@ -287,234 +287,244 @@ Notification that is sent when PayPal processes a payment.
 
 =head2 new()
 
-  Creates a new Business::PayPal object, it can take the 
-  following parameters:
+Creates a new Business::PayPal object, it can take the
+following parameters:
 
 =over 2
 
-=item id  
+=item id
 
-  - The Business::PayPal object id, if not specified a new 
-    id will be created using md5_hex(rand())
+The Business::PayPal object id, if not specified a new
+id will be created using md5_hex(rand())
 
 =item address
 
-  - The address of PayPal's payment server, currently:
-    https://www.paypal.com/cgi-bin/webscr
+The address of PayPal's payment server, currently:
+https://www.paypal.com/cgi-bin/webscr
 
 =item cert
 
-  - The x509 certificate for I<address>, see source for default
+The x509 certificate for I<address>, see source for default
 
-=item certcontent 
+=item certcontent
 
-  - The contents of the x509 certificate I<cert>, see source for 
-    default
+The contents of the x509 certificate I<cert>, see source for
+default
 
 =back
 
 =head2 id()
 
-  Returns the id for the Business::PayPal object. 
+Returns the id for the Business::PayPal object.
 
 =head2 button()
 
-  Returns the HTML for a PayPal button.  It takes a large number of
-  parameters, which control the look and function of the button, some
-  of which are required and some of which have defaults.  They are
-  as follows:
+Returns the HTML for a PayPal button.  It takes a large number of
+parameters, which control the look and function of the button, some
+of which are required and some of which have defaults.  They are
+as follows:
 
 =over 2
 
 =item cmd
 
-  required, defaults to '_ext-enter'
-  This allows the user information to be pre-filled in.
-  You should never need to specify this, as the default should 
-  work fine.
+required, defaults to '_ext-enter'
+
+This allows the user information to be pre-filled in.
+You should never need to specify this, as the default should
+work fine.
 
 =item redirect_cmd
 
-  required, defaults to '_xclick'
-  This allows the user information to be pre-filled in.
-  You should never need to specify this, as the default should 
-  work fine.
+required, defaults to '_xclick'
+
+This allows the user information to be pre-filled in.
+You should never need to specify this, as the default should
+work fine.
 
 =item button_image
 
-  required, defaults to:
+required, defaults to:
 
     CGI::image_button(-name => 'submit',
                       -src  => 'http://images.paypal.com/x-click-but01.gif'
                       -alt  => 'Make payments with PayPal',
                      )
 
-  You may wish to change this if the button is on an https page 
-  so as to avoid the browser warnings about insecure content on a 
-  secure page.
+You may wish to change this if the button is on an https page
+so as to avoid the browser warnings about insecure content on a
+secure page.
 
 =item business
 
-  required, no default
-  This is the name of your PayPal account.
+required, no default
+
+This is the name of your PayPal account.
 
 =item item_name
 
-  This is the name of the item you are selling.
+This is the name of the item you are selling.
 
 =item item_number
 
-  This is a numerical id of the item you are selling.
+This is a numerical id of the item you are selling.
 
 =item image_url
 
-  A URL pointing to a 150 x 50 image which will be displayed 
-  instead of the name of your PayPal account.
+A URL pointing to a 150 x 50 image which will be displayed
+instead of the name of your PayPal account.
 
 =item no_shipping
 
-  defaults to 1
-  If set to 1, does not ask customer for shipping info, if 
-  set to 0 the customer will be prompted for shipping information.
+defaults to 1
+
+If set to 1, does not ask customer for shipping info, if
+set to 0 the customer will be prompted for shipping information.
 
 =item return
 
-  This is the URL to which the customer will return to after 
-  they have finished paying.
+This is the URL to which the customer will return to after
+they have finished paying.
 
 =item cancel_return
 
-  This is the URL to which the customer will be sent if they cancel
-  before paying.
+This is the URL to which the customer will be sent if they cancel
+before paying.
 
 =item no_note
 
-  defaults to 1
-  If set to 1, does not ask customer for a note with the payment, 
-  if set to 0, the customer will be asked to include a note.
+defaults to 1
+
+If set to 1, does not ask customer for a note with the payment,
+if set to 0, the customer will be asked to include a note.
 
 =item currency_code
 
-  Currency the payment should be taken in, e.g. EUR, GBP.
-  If not specified payments default to USD.
+Currency the payment should be taken in, e.g. EUR, GBP.
+If not specified payments default to USD.
 
 =item address1
 
 =item undefined_quantity
 
-  defaults to 0
-  If set to 0 the quantity defaults to 1, if set to 1 the user 
-  can edit the quantity.
+defaults to 0
+
+If set to 0 the quantity defaults to 1, if set to 1 the user
+can edit the quantity.
 
 =item notify_url
 
-  The URL to which PayPal Instant Payment Notification is sent.
+The URL to which PayPal Instant Payment Notification is sent.
 
 =item first_name
 
-  First name of customer, used to pre-fill PayPal forms.
+First name of customer, used to pre-fill PayPal forms.
 
 =item last_name
 
-  Last name of customer, used to pre-fill PayPal forms.
+Last name of customer, used to pre-fill PayPal forms.
 
 =item shipping
 
-  I don't know, something to do with shipping, please tell me if
-  you find out.
+I don't know, something to do with shipping, please tell me if
+you find out.
 
 =item shipping2
 
-  I don't know, something to do with shipping, please tell me if you
-  find out.
+I don't know, something to do with shipping, please tell me if you
+find out.
 
 =item quantity
 
-  defaults to 1
-  Number of items being sold.
+defaults to 1
+
+Number of items being sold.
 
 =item amount
 
-  Price of the item being sold.
+Price of the item being sold.
 
 =item address1
 
-  Address of customer, used to pre-fill PayPal forms.
+Address of customer, used to pre-fill PayPal forms.
 
 =item address2
 
-  Address of customer, used to pre-fill PayPal forms.
+Address of customer, used to pre-fill PayPal forms.
 
 =item city
 
-  City of customer, used to pre-fill PayPal forms.
+City of customer, used to pre-fill PayPal forms.
 
 =item state
 
-  State of customer, used to pre-fill PayPal forms.
+State of customer, used to pre-fill PayPal forms.
 
 =item zip
 
-  Zip of customer, used to pre-fill PayPal forms.
+Zip of customer, used to pre-fill PayPal forms.
 
 =item night_phone_a
 
-  Phone
+Phone
 
 =item night_phone_b
 
-  Phone
+Phone
 
 =item night_phone_c
 
-  Phone
+Phone
 
 =item day_phone_a
 
-  Phone
+Phone
 
 =item day_phone_b
 
-  Phone
+Phone
 
 =item day_phone_c
 
-  Phone
+Phone
 
 =item receiver_email
 
-  Email address of customer - I think
+Email address of customer - I think
 
 =item invoice
 
-  Invoice number - I think
+Invoice number - I think
 
 =item custom
 
-  defaults to the Business::PayPal id
-  Used by Business::PayPal to track which button is associated 
-  with which Instant Payment Notification.
+defaults to the Business::PayPal id
+
+Used by Business::PayPal to track which button is associated
+with which Instant Payment Notification.
 
 =back
 
 =head2 ipnvalidate()
 
-  Takes a reference to a hash of name value pairs, such as from a 
-  CGI query object, which should contain all the name value pairs 
-  which have been posted to the script by PayPal's Instant Payment 
-  Notification posts that data back to PayPal, checking if the ssl 
-  certificate matches, and returns success or failure, and the 
-  reason.
+Takes a reference to a hash of name value pairs, such as from a
+CGI query object, which should contain all the name value pairs
+which have been posted to the script by PayPal's Instant Payment
+Notification posts that data back to PayPal, checking if the ssl
+certificate matches, and returns success or failure, and the
+reason.
 
 =head2 postpaypal()
 
-  This method should not normally be used unless you need to test, 
-  or if you are overriding the behaviour of ipnvalidate.  It takes a 
-  reference to a hash containing the query, posts to PayPal with 
-  the data, and returns success or failure, as well as PayPal's 
-  response.
+This method should not normally be used unless you need to test,
+or if you are overriding the behaviour of ipnvalidate.  It takes a
+reference to a hash containing the query, posts to PayPal with
+the data, and returns success or failure, as well as PayPal's
+response.
 
 =head1 MAINTAINER
+
+Gabor Szabo, E<lt>gabor@szabgab.comE<gt>
 
 phred, E<lt>fred@redhotpenguin.comE<gt>
 
