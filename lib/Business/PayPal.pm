@@ -59,8 +59,7 @@ chomp($Certcontent);
 
 # creates new PayPal object.  Assigns an id if none is provided.
 sub new {
-    my $invocant = shift;
-    my $class = ref($invocant) || $invocant;
+    my $class = shift;
     my $self = {
         id => undef,
         address => 'https://www.paypal.com/cgi-bin/webscr',
