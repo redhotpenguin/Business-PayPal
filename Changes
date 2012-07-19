@@ -1,6 +1,6 @@
 Revision history for Perl extension Business::PayPal.
 
-0.05
+0.05 July 19 2012
     - update Certificate
     - standardize directory layout
     - modernize tests
