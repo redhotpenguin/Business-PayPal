@@ -116,17 +116,14 @@ sub button {
         @_,
     );
     my $key;
-    my $content = qq{<form method="post" action="$self->{'address'}" enctype="multipart/form-data">};
+    my $content = qq{<form method="post" action="$self->{address}" enctype="multipart/form-data">};
 
-    foreach my $param (keys %buttonparam) {
-        next unless defined $buttonparam{$param};
-        if ($param eq 'button_image') {
-            $content .= $buttonparam{$param};
-        }
-        else {
-            $content .= qq{<input type="hidden" name="$param" value="$buttonparam{$param}" />};
-        }
+    foreach my $param (sort keys %buttonparam) {
+        next if not defined $buttonparam{$param};
+        next if $param eq 'button_image';
+        $content .= qq{<input type="hidden" name="$param" value="$buttonparam{$param}" />};
     }
+    $content .= $buttonparam{button_image};
     $content .= qq{</form>};
     return $content;
 }
@@ -235,11 +232,13 @@ Include something like the following in your CGI
   );
   my $id = $paypal->id;
 
-store $id somewhere so we can get it back again later
-store current context with $id
-Apache::Session works well for this
-print button to the browser
-note, button is a CGI form, enclosed in <form></form> tags
+Store $id somewhere so we can get it back again later
+
+Store current context with $id.
+
+Print button to the browser.
+
+Note, button is an HTML form, already enclosed in <form></form> tags
 
 
 
