@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 use Test::More;
-plan tests => 7;
+plan tests => 9;
 
 use Business::PayPal;
 
@@ -27,6 +27,8 @@ my %query = (
     item_name => 'IPN Test',
 );
 my ($success, $reason) = $pp1->ipnvalidate(\%query);
-ok($reason, 'PayPal says transaction INVALID'); #test if cert is correct
+is($success, undef, 'expected failure');
+is($reason, 'PayPal says transaction INVALID'); #test if cert is correct
+is scalar($pp1->ipnvalidate(\%query)), undef, 'undef in scalar context';
 
 
