@@ -59,6 +59,7 @@ chomp($Certcontent);
 # creates new PayPal object.  Assigns an id if none is provided.
 sub new {
     my $class = shift;
+
     my $self = {
         id => undef,
         address => 'https://www.paypal.com/cgi-bin/webscr',
@@ -66,18 +67,21 @@ sub new {
     };
     bless $self, $class;
     $self->{id} = md5_hex(rand()) unless $self->{id};
+
     return $self;
 }
 
 # returns current PayPal id
 sub id {
-    my $self = shift;
+    my ($self) = @_;
+
     return $self->{id};
 }
 
 #creates a PayPal button
 sub button {
     my $self = shift;
+
     my %buttonparam = (
         cmd                 => '_ext-enter',
         redirect_cmd        => '_xclick',
@@ -125,6 +129,7 @@ sub button {
     }
     $content .= $buttonparam{button_image};
     $content .= qq{</form>};
+
     return $content;
 }
 
@@ -135,13 +140,13 @@ sub button {
 # posts that data back to PayPal, checking if the ssl certificate matches,
 # and returns success or failure, and the reason.
 sub ipnvalidate {
-    my $self = shift;
-    my $query = shift;
-    $$query{cmd} = '_notify-validate';
+    my ($self, $query) = @_;
+
+    $query->{cmd} = '_notify-validate';
     my $id = $self->{id};
     my ($succ, $reason) = $self->postpaypal($query);
-    return (wantarray ? ($id, $reason) : $id)
-        if $succ;
+
+    return (wantarray ? ($id,   $reason) : $id  ) if $succ;
     return (wantarray ? (undef, $reason) : undef);
 }
 
@@ -150,9 +155,9 @@ sub ipnvalidate {
 # to a hash containing the query, posts to PayPal with the data, and returns
 # success or failure, as well as PayPal's response.
 sub postpaypal {
-    my $self = shift;
+    my ($self, $query) = @_;
+
     my $address = $self->{address};
-    my $query = shift; # reference to hash containing name value pairs
     my ($site, $port, $path);
 
     #following code splits an url into site, port and path components
