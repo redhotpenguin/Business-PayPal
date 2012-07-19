@@ -1,7 +1,7 @@
 Changes
 Makefile.PL
 MANIFEST
-PayPal.pm
+lib/Business/PayPal.pm
 getppcert.pl
 README
 test.pl
