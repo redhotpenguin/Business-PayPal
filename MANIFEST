@@ -1,8 +1,0 @@
-Changes
-Makefile.PL
-MANIFEST
-lib/Business/PayPal.pm
-getppcert.pl
-README
-t/00-test.t
-META.yml                                 Module meta-data (added by MakeMaker)
