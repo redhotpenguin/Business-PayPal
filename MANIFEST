@@ -4,5 +4,5 @@ MANIFEST
 lib/Business/PayPal.pm
 getppcert.pl
 README
-test.pl
+t/00-test.t
 META.yml                                 Module meta-data (added by MakeMaker)
