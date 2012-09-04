@@ -1,14 +1,15 @@
 Revision history for Perl extension Business::PayPal.
 
+0.06 2012 September 04
     - stop cloning in constructor
     - eliminate the dependency on CGI by manually creating the button
 
-0.05 July 19 2012
+0.05 2012 July 19
     - update Certificate
     - standardize directory layout
     - modernize tests
 
-0.04  Wed Aug 04 23:28:00 2010
+0.04  2010 Aug 04
     - fix incorrect synopsis for new() method with id
     - update default cert
     - encapsulate default cert in package variable to prevent bugs with
@@ -16,17 +17,17 @@ Revision history for Perl extension Business::PayPal.
     - support multiple currency, default to USD [CHISEL]
     - Fix to button code to allow sandbox testing [william@knowmad.com]
 
-0.03  Thu Dec 25 01:00:00 2008
+0.03  2008 Dec 25
     - fix typo in usage for button_image
     - new maintainer PHRED
 
-0.02  Sun Aug 25 23:23:04 2002
+0.02  2002 Aug 25
     - fixed Makefile.PL so that CPAN.pm will install
           prerequisite modules.  Thanks to Rick Myers for
           the patch which prompted me to get off my ass and
           fix this.
 
-0.01  Sat Mar 30 12:02:44 2002
+0.01  2002 Mar 30
     - original version; created by h2xs 1.21 with options
         -AX -n Business::PayPal
 
