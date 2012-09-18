@@ -4,12 +4,16 @@ use 5.6.1;
 use strict;
 use warnings;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 use Net::SSLeay 1.14;
 use Digest::MD5 qw(md5_hex);
 
-our $Cert = <<CERT;
+our $Cert;
+our $Certcontent;
+
+my @certificates;
+push @certificates, <<'CERT';
 -----BEGIN CERTIFICATE-----
 MIIGSzCCBTOgAwIBAgIQLjOHT2/i1B7T//819qTJGDANBgkqhkiG9w0BAQUFADCB
 ujELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMR8wHQYDVQQL
@@ -47,13 +51,57 @@ YjQyLpdUhUhuPslV1qs+Bmi6O+e6htDHvD05wUaRzk6vsPcEQ3EqsPbdpLgejb5p
 9YDR12XLZeQjO1uiunCsJkDIf9/5Mqpu57pw8v1QNA==
 -----END CERTIFICATE-----
 CERT
-chomp($Cert);
 
-our $Certcontent = <<CERTCONTENT;
+push @certificates, <<'CERT';
+-----BEGIN CERTIFICATE-----
+MIIF9zCCBN+gAwIBAgIQE793e1MYa7/UOM7AWAq1djANBgkqhkiG9w0BAQUFADCB
+ujELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMR8wHQYDVQQL
+ExZWZXJpU2lnbiBUcnVzdCBOZXR3b3JrMTswOQYDVQQLEzJUZXJtcyBvZiB1c2Ug
+YXQgaHR0cHM6Ly93d3cudmVyaXNpZ24uY29tL3JwYSAoYykwNjE0MDIGA1UEAxMr
+VmVyaVNpZ24gQ2xhc3MgMyBFeHRlbmRlZCBWYWxpZGF0aW9uIFNTTCBDQTAeFw0x
+MjA3MjUwMDAwMDBaFw0xNDA3MjYyMzU5NTlaMIIBDTETMBEGCysGAQQBgjc8AgED
+EwJVUzEZMBcGCysGAQQBgjc8AgECEwhEZWxhd2FyZTEdMBsGA1UEDxMUUHJpdmF0
+ZSBPcmdhbml6YXRpb24xEDAOBgNVBAUTBzMwMTQyNjcxCzAJBgNVBAYTAlVTMRMw
+EQYDVQQRFAo5NTEzMS0yMDIxMRMwEQYDVQQIEwpDYWxpZm9ybmlhMREwDwYDVQQH
+FAhTYW4gSm9zZTEWMBQGA1UECRQNMjIxMSBOIDFzdCBTdDEVMBMGA1UEChQMUGF5
+UGFsLCBJbmMuMRgwFgYDVQQLFA9Ib3N0aW5nIFN1cHBvcnQxFzAVBgNVBAMUDnd3
+dy5wYXlwYWwuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAppUu
+PoT6YFWB8pFt8zRlOsXR9oiqkFI4QNwUw2P4n9XKsecMr6N41dbbKYz6jo1iwQRF
+d1bF+Jhc8Me9LhSugvGmN0idSZkLKyGSC+npiVki28NBu7/bHjdM8A3Soj6r8z0w
+VmhA7nyd0icIcPvtyK1lUA3oBw96B+RpA2q5WWXFkpFS7b0827rnJSy8Ymdmb3nb
+7I2vMLNl+EP1oy6cXL+6hqRun7dJ2hBhf+PbXn82AOWry6kdaMh8lS7GaFhVi+3e
+4MqBq7aAxB3dHTT0FE0nrcGDUKLi1G0mNZ3MC8kE73Gw4LOWbRSOwHwM6cKSYROJ
+LW5h4RRoDumqqBcRLwIDAQABo4IBoTCCAZ0wGQYDVR0RBBIwEIIOd3d3LnBheXBh
+bC5jb20wCQYDVR0TBAIwADAdBgNVHQ4EFgQU1jn61Uw9IMzAhBDGhhRQ272uHxgw
+DgYDVR0PAQH/BAQDAgWgMEIGA1UdHwQ7MDkwN6A1oDOGMWh0dHA6Ly9FVlNlY3Vy
+ZS1jcmwudmVyaXNpZ24uY29tL0VWU2VjdXJlMjAwNi5jcmwwRAYDVR0gBD0wOzA5
+BgtghkgBhvhFAQcXBjAqMCgGCCsGAQUFBwIBFhxodHRwczovL3d3dy52ZXJpc2ln
+bi5jb20vY3BzMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggrBgEFBQcDAjAfBgNVHSME
+GDAWgBT8ilC6nrklWntVhU+VAGOP6VhrQzB8BggrBgEFBQcBAQRwMG4wLQYIKwYB
+BQUHMAGGIWh0dHA6Ly9FVlNlY3VyZS1vY3NwLnZlcmlzaWduLmNvbTA9BggrBgEF
+BQcwAoYxaHR0cDovL0VWU2VjdXJlLWFpYS52ZXJpc2lnbi5jb20vRVZTZWN1cmUy
+MDA2LmNlcjANBgkqhkiG9w0BAQUFAAOCAQEAUuBmKY9TPpsM7OYaP6lu1Vu+koMp
+vjr6rtj1CRqi3/LMRQv2IBiZgcvhJ4MtHlXlLX4/AZD7SlLi4ufPlcVCms7I53To
+QcfdkDxjCPJ87yswfUWsrs/2r4I8Ov11hjEqrHtKYFeNylOEwY3ebXdUP0dKzF7T
+ojUnh2wrXCQ209jm6z+XP0f90C9SuTe93gAv1PUhYISdvmjxnCLe5+yu3maQB4dV
++IwWEw0icKMfxU848hF/X2wqXd6pelXnox2eAFgW/OYm7kNrUvJxyvI+1YXAoQOG
+yV9cU3oSGzyTfllBTZWTzvPT1rzG40AL3OQXk8qgWUKfpEhsZVAnMBa2Xg==
+-----END CERTIFICATE-----
+CERT
+
+chomp(@certificates);
+
+my @cert_contents;
+push @cert_contents, <<'CERTCONTENT';
 Subject Name: /1.3.6.1.4.1.311.60.2.1.3=US/1.3.6.1.4.1.311.60.2.1.2=Delaware/businessCategory=Private Organization/serialNumber=3014267/C=US/postalCode=95131-2021/ST=California/L=San Jose/street=2211 N 1st St/O=PayPal, Inc./OU=PayPal Production/CN=www.paypal.com
 Issuer  Name: /C=US/O=VeriSign, Inc./OU=VeriSign Trust Network/OU=Terms of use at https://www.verisign.com/rpa (c)06/CN=VeriSign Class 3 Extended Validation SSL CA
 CERTCONTENT
-chomp($Certcontent);
+
+push @cert_contents, <<'CERTCONTENT';
+Subject Name: /1.3.6.1.4.1.311.60.2.1.3=US/1.3.6.1.4.1.311.60.2.1.2=Delaware/businessCategory=Private Organization/serialNumber=3014267/C=US/postalCode=95131-2021/ST=California/L=San Jose/street=2211 N 1st St/O=PayPal, Inc./OU=Hosting Support/CN=www.paypal.com
+Issuer  Name: /C=US/O=VeriSign, Inc./OU=VeriSign Trust Network/OU=Terms of use at https://www.verisign.com/rpa (c)06/CN=VeriSign Class 3 Extended Validation SSL CA
+CERTCONTENT
+chomp(@cert_contents);
 
 
 # creates new PayPal object.  Assigns an id if none is provided.
@@ -193,9 +241,23 @@ sub postpaypal {
 
     chomp $ppx509;
     chomp $ppcertcontent;
-    return (wantarray ? (undef, "PayPal cert failed to match: $ppx509\n$Cert") : undef)
-        unless $Cert eq $ppx509;
-    return (wantarray ? (undef, "PayPal cert contents failed to match $ppcertcontent") : undef)        unless $ppcertcontent eq "$Certcontent";
+
+	# TODO warn if there is a value in $Cert or $Certcontent as those will be deprecated
+	my @certs = @certificates;
+	if ($Cert) {
+		# TODO warn
+		push @certs, $Cert;
+	}
+	my @cert_cont = @cert_contents;
+	if ($Certcontent) {
+		# TODO warn
+		push @cert_cont, $Certcontent;
+	}
+
+    return (wantarray ? (undef, "PayPal cert failed to match: $ppx509") : undef)
+        unless grep {$_ eq $ppx509} @certs;
+    return (wantarray ? (undef, "PayPal cert contents failed to match $ppcertcontent") : undef)
+        unless grep { $_ eq $ppcertcontent } @cert_cont;
     return (wantarray ? (undef, 'PayPal says transaction INVALID') : undef)
         if $page eq 'INVALID';
     return (wantarray ? (1, 'PayPal says transaction VERIFIED') : 1)
