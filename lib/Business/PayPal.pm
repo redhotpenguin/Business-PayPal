@@ -101,8 +101,18 @@ push @cert_contents, <<'CERTCONTENT';
 Subject Name: /1.3.6.1.4.1.311.60.2.1.3=US/1.3.6.1.4.1.311.60.2.1.2=Delaware/businessCategory=Private Organization/serialNumber=3014267/C=US/postalCode=95131-2021/ST=California/L=San Jose/street=2211 N 1st St/O=PayPal, Inc./OU=Hosting Support/CN=www.paypal.com
 Issuer  Name: /C=US/O=VeriSign, Inc./OU=VeriSign Trust Network/OU=Terms of use at https://www.verisign.com/rpa (c)06/CN=VeriSign Class 3 Extended Validation SSL CA
 CERTCONTENT
-chomp(@cert_contents);
 
+push @cert_contents, <<'CERTCONTENT';
+Subject Name: /1.3.6.1.4.1.311.60.2.1.3=US/1.3.6.1.4.1.311.60.2.1.2=Delaware/2.5.4.15=Private Organization/serialNumber=3014267/C=US/postalCode=95131-2021/ST=California/L=San Jose/streetAddress=2211 N 1st St/O=PayPal, Inc./OU=PayPal Production/CN=www.paypal.com
+Issuer  Name: /C=US/O=VeriSign, Inc./OU=VeriSign Trust Network/OU=Terms of use at https://www.verisign.com/rpa (c)06/CN=VeriSign Class 3 Extended Validation SSL CA
+CERTCONTENT
+
+push @cert_contents, <<'CERTCONTENT';
+Subject Name: /1.3.6.1.4.1.311.60.2.1.3=US/1.3.6.1.4.1.311.60.2.1.2=Delaware/2.5.4.15=Private Organization/serialNumber=3014267/C=US/postalCode=95131-2021/ST=California/L=San Jose/streetAddress=2211 N 1st St/O=PayPal, Inc./OU=Hosting Support/CN=www.paypal.com
+Issuer  Name: /C=US/O=VeriSign, Inc./OU=VeriSign Trust Network/OU=Terms of use at https://www.verisign.com/rpa (c)06/CN=VeriSign Class 3 Extended Validation SSL CA
+CERTCONTENT
+
+chomp(@cert_contents);
 
 # creates new PayPal object.  Assigns an id if none is provided.
 sub new {
