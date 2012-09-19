@@ -1,5 +1,8 @@
 Revision history for Perl extension Business::PayPal.
 
+0.08 2012 September 19
+    - Add 2 more cert reported by CPAN Testers
+
 0.07 2012 September 18
     - Add alternative certificate
 
