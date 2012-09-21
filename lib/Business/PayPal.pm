@@ -238,6 +238,8 @@ sub postpaypal {
                                          '',
                                          Net::SSLeay::make_form(%$query));
 
+    return (wantarray ? (undef, "No PayPal cert found") : undef)
+        unless $ppcert;
 
     my $ppx509 = Net::SSLeay::PEM_get_string_X509($ppcert);
     my $ppcertcontent =
