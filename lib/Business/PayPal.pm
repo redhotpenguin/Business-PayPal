@@ -608,6 +608,11 @@ to do conference registrations.  If you wish to see it working, just
 fill out the forms until you get to the PayPal button, click on the button,
 and then cancel before paying (or pay, and come to CanSecWest :-) ).
 
+
+Explanation of the fields: L<http://www.paypalobjects.com/en_US/ebook/subscriptions/html.html>
+See also in the pdf here: L<https://www.paypal.com/cgi-bin/webscr?cmd=p/xcl/rec/subscr-manual-outside>
+
+
 =head1 LICENSE
 
 Copyright (c) 2010, phred E<lt>fred@redhotpenguin.comE<gt>. All rights reserved.
