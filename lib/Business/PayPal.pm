@@ -178,15 +178,15 @@ sub button {
         @_,
     );
     my $key;
-    my $content = qq{<form method="post" action="$self->{address}" enctype="multipart/form-data">};
+    my $content = qq{<form method="post" action="$self->{address}" enctype="multipart/form-data">\n};
 
     foreach my $param (sort keys %buttonparam) {
         next if not defined $buttonparam{$param};
         next if $param eq 'button_image';
-        $content .= qq{<input type="hidden" name="$param" value="$buttonparam{$param}" />};
+        $content .= qq{<input type="hidden" name="$param" value="$buttonparam{$param}" />\n};
     }
-    $content .= $buttonparam{button_image};
-    $content .= qq{</form>};
+    $content .= "$buttonparam{button_image}\n";
+    $content .= qq{</form>\n};
 
     return $content;
 }
