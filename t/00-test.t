@@ -2,9 +2,11 @@ use strict;
 use warnings;
 
 use Test::More;
-plan tests => 9;
-
 use Business::PayPal;
+
+my $n = 1;
+plan tests => 9 + 2*$n + 6;
+
 
 my $pp1 = Business::PayPal->new();
 my $pp2 = Business::PayPal->new(id => 'foobar');
@@ -31,4 +33,47 @@ is($success, undef, 'expected failure');
 is($reason, 'PayPal says transaction INVALID'); #test if cert is correct
 is scalar($pp1->ipnvalidate(\%query)), undef, 'undef in scalar context';
 
+for (1 .. $n) {
+	my $pp = Business::PayPal->new();
+	my $button = $pp->button(
+		business       => 'foo@bar.com',
+		item_name      => 'Instant water',
+		amount         => 99.99,
+		quantity       => 1,
+		return         => 'http://bar.com/water',
+		cancel_return  => 'http://bar.com/nowwater',
+		notify_url     => 'http://bar.com/hello_water',
+	);
+	#diag $button;
+
+	like $button, qr{foo\@bar\.com}, 'email';
+	like $button, qr{<input type="hidden" name="amount" value="99.99" />}, 'amount';
+}
+
+
+{
+	my $pp = Business::PayPal->new();
+	my $button = $pp->button(
+		cmd            => '_xclick-subscriptions',
+		business       => 'foo@bar.com',
+		item_name      => 'Instant water',
+
+		src            => 1,
+		a3             => 9,
+		p3             => 1,
+		t3             => 'M',
+
+		quantity       => 1,
+		return         => 'http://bar.com/water',
+		cancel_return  => 'http://bar.com/nowwater',
+		notify_url     => 'http://bar.com/hello_water',
+	);
+	#diag $button;
+	like $button, qr{foo\@bar\.com}, 'email';
+	unlike $button, qr{amount}, 'no amount when recurring';
+	like $button, qr{<input type="hidden" name="a3" value="9" />};
+	like $button, qr{<input type="hidden" name="p3" value="1" />};
+	like $button, qr{<input type="hidden" name="src" value="1" />};
+	like $button, qr{<input type="hidden" name="t3" value="M" />};
+}
 

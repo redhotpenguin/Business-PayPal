@@ -178,15 +178,15 @@ sub button {
         @_,
     );
     my $key;
-    my $content = qq{<form method="post" action="$self->{address}" enctype="multipart/form-data">};
+    my $content = qq{<form method="post" action="$self->{address}" enctype="multipart/form-data">\n};
 
     foreach my $param (sort keys %buttonparam) {
         next if not defined $buttonparam{$param};
         next if $param eq 'button_image';
-        $content .= qq{<input type="hidden" name="$param" value="$buttonparam{$param}" />};
+        $content .= qq{<input type="hidden" name="$param" value="$buttonparam{$param}" />\n};
     }
-    $content .= $buttonparam{button_image};
-    $content .= qq{</form>};
+    $content .= "$buttonparam{button_image}\n";
+    $content .= qq{</form>\n};
 
     return $content;
 }
@@ -609,6 +609,11 @@ https://www.cansecwest.com/register.cgi is currently using this module
 to do conference registrations.  If you wish to see it working, just
 fill out the forms until you get to the PayPal button, click on the button,
 and then cancel before paying (or pay, and come to CanSecWest :-) ).
+
+
+Explanation of the fields: L<http://www.paypalobjects.com/en_US/ebook/subscriptions/html.html>
+See also in the pdf here: L<https://www.paypal.com/cgi-bin/webscr?cmd=p/xcl/rec/subscr-manual-outside>
+
 
 =head1 LICENSE
 
