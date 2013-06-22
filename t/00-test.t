@@ -30,7 +30,11 @@ my %query = (
 );
 my ($success, $reason) = $pp1->ipnvalidate(\%query);
 is($success, undef, 'expected failure');
-is($reason, 'PayPal says transaction INVALID'); #test if cert is correct
+is($reason, 'PayPal says transaction INVALID') or do {
+  open my $fh, '>', 'cert.txt' or die;
+  print $fh $reason;
+  close $fh;
+}; #test if cert is correct
 is scalar($pp1->ipnvalidate(\%query)), undef, 'undef in scalar context';
 
 for (1 .. $n) {
