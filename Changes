@@ -1,5 +1,8 @@
 Revision history for Perl extension Business::PayPal.
 
+0.10 2013.06.24
+    - Add another case for the recent Cert update.
+
 0.09 2013.06.22
     - Added new cert as returned by PayPal.
     - report error when no cert found
