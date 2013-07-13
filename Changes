@@ -1,5 +1,7 @@
 Revision history for Perl extension Business::PayPal.
 
+    - Add Licens and Repo link to META files.
+
 0.11 2013.07.08
     - Add another possible certificate.
 

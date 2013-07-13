@@ -12,4 +12,18 @@ WriteMakefile(
 ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
        (ABSTRACT_FROM => 'lib/Business/PayPal.pm', # retrieve abstract from module
         AUTHOR     => 'phred <fred@redhotpenguin.com>') : ()),
+
+    ($ExtUtils::MakeMaker::VERSION >= 6.3002
+      ? ('LICENSE'=> 'perl')
+      : ()),
+
+    (eval { ExtUtils::MakeMaker->VERSION(6.46) }
+      ? (META_MERGE => {
+          resources => {
+            Repository => 'http://github.com/szabgab/Business-PayPal',
+          }
+        })
+      : ()
+    ),
+ 
 );
