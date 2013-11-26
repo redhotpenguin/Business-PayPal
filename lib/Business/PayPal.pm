@@ -420,9 +420,9 @@ button used above include something like the following in your
   my $money = $query{payment_gross};
   my $paystatus = $query{payment_status};
 
-check if paystatus eq 'Completed'
-check if $money is the ammount you expected
-save payment status information to store as $id
+Check if paystatus eq 'Completed'.
+Check if $money is the amount you expected.
+Save payment status information to store as $id.
 
 
 To tell the user if their payment succeeded or not, use something like
