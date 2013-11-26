@@ -690,12 +690,6 @@ mock, E<lt>mock@obscurity.orgE<gt>
 
 L<CGI>, L<perl>, L<Apache::Session>.
 
-https://www.cansecwest.com/register.cgi is currently using this module
-to do conference registrations.  If you wish to see it working, just
-fill out the forms until you get to the PayPal button, click on the button,
-and then cancel before paying (or pay, and come to CanSecWest :-) ).
-
-
 Explanation of the fields: L<http://www.paypalobjects.com/en_US/ebook/subscriptions/html.html>
 See also in the pdf here: L<https://www.paypal.com/cgi-bin/webscr?cmd=p/xcl/rec/subscr-manual-outside>
 
