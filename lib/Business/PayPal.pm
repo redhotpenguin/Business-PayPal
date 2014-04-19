@@ -378,15 +378,16 @@ sub postpaypal {
     chomp $ppx509;
     chomp $ppcertcontent;
 
-	# TODO warn if there is a value in $Cert or $Certcontent as those will be deprecated
 	my @certs = @certificates;
 	if ($Cert) {
-		# TODO warn
+		# TODO added in 0.12
+		warn "The global variable \$Cert is deprecated and will be removed soon. Pass a certificate to the constructor using the 'cert' parameter.\n";
 		push @certs, $Cert;
 	}
 	my @cert_cont = @cert_contents;
 	if ($Certcontent) {
-		# TODO warn
+		# TODO added in 0.12
+		warn "The global variable \$Certcontent is deprecated and will be removed soon. Pass a certificate to the constructor using the 'certcontent' parameter.\n";
 		push @cert_cont, $Certcontent;
 	}
 

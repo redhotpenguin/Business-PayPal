@@ -1,5 +1,8 @@
 Revision history for Perl extension Business::PayPal.
 
+    - Add deprecation warning to the global variables
+      $Cert and $Certcontent
+
     - New cert added
     - Add License and Repo link to META files.
       (fixed by David Steinbrunner)
