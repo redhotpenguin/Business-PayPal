@@ -1,5 +1,8 @@
 Revision history for Perl extension Business::PayPal.
 
+    - Fixing the cert and certcontent paramaters of the constructor RT #92367
+    - Adding the addcert and addcertcontent parameters.
+
     - Add deprecation warning to the global variables
       $Cert and $Certcontent
 

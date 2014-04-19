@@ -391,6 +391,20 @@ sub postpaypal {
 		push @cert_cont, $Certcontent;
 	}
 
+	if ($self->{addcert}) {
+		push @certs, $self->{cert};
+	}
+	if ($self->{addcertcontent}) {
+		push @certs, $self->{certcontent};
+	}
+
+	if ($self->{cert}) {
+		@certs = $self->{cert};
+	}
+	if ($self->{certcontent}) {
+		@certs = $self->{certcontent};
+	}
+
     return (wantarray ? (undef, "PayPal cert failed to match: $ppx509") : undef)
         unless grep {$_ eq $ppx509} @certs;
     return (wantarray ? (undef, "PayPal cert contents failed to match $ppcertcontent") : undef)
@@ -498,12 +512,22 @@ https://www.paypal.com/cgi-bin/webscr
 
 =item cert
 
-The x509 certificate for I<address>, see source for default
+The x509 certificate for I<address>, see source for default.
 
 =item certcontent
 
 The contents of the x509 certificate I<cert>, see source for
-default
+default.
+
+=item addcert
+
+The x509 certificate for I<address>.
+This is added to the default values.
+
+=item addcertcontent
+
+The contents of the x509 certificate I<cert>,
+This is added to the default values.
 
 =back
 
