@@ -4,7 +4,7 @@ use 5.6.1;
 use strict;
 use warnings;
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 use Net::SSLeay 1.14;
 use Digest::MD5 qw(md5_hex);
@@ -742,7 +742,7 @@ response.
 
 =head1 MAINTAINER
 
-Gabor Szabo, E<lt>gabor@szabgab.comE<gt>
+Gabor Szabo, L<http://szabgab.com/>, L<http://perlmaven.com/>
 
 phred, E<lt>fred@redhotpenguin.comE<gt>
 
