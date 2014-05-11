@@ -1,5 +1,8 @@
 Revision history for Perl extension Business::PayPal.
 
+0.13 2014-05-11
+    - Comment out old certificates. Only include the one returned by getppcert.pl
+
 0.12 2014-04-19
 
     - Fixing the cert and certcontent paramaters of the constructor RT #92367
