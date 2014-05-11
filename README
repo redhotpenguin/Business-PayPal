@@ -23,7 +23,6 @@ DEPENDENCIES
 This module requires these other modules and libraries:
 
 Net::SSLeay version 1.14 or greater
-CGI
 Digest::MD5
 
 COPYRIGHT AND LICENCE

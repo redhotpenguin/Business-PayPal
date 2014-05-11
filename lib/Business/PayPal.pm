@@ -4,57 +4,239 @@ use 5.6.1;
 use strict;
 use warnings;
 
-our $VERSION = '0.05';
+our $VERSION = '0.13';
 
 use Net::SSLeay 1.14;
 use Digest::MD5 qw(md5_hex);
 
-our $Cert = <<CERT;
+our $Cert;
+our $Certcontent;
+
+my @certificates;
+# push @certificates, <<'CERT';
+# -----BEGIN CERTIFICATE-----
+# MIIGSzCCBTOgAwIBAgIQLjOHT2/i1B7T//819qTJGDANBgkqhkiG9w0BAQUFADCB
+# ujELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMR8wHQYDVQQL
+# ExZWZXJpU2lnbiBUcnVzdCBOZXR3b3JrMTswOQYDVQQLEzJUZXJtcyBvZiB1c2Ug
+# YXQgaHR0cHM6Ly93d3cudmVyaXNpZ24uY29tL3JwYSAoYykwNjE0MDIGA1UEAxMr
+# VmVyaVNpZ24gQ2xhc3MgMyBFeHRlbmRlZCBWYWxpZGF0aW9uIFNTTCBDQTAeFw0x
+# MTAzMjMwMDAwMDBaFw0xMzA0MDEyMzU5NTlaMIIBDzETMBEGCysGAQQBgjc8AgED
+# EwJVUzEZMBcGCysGAQQBgjc8AgECEwhEZWxhd2FyZTEdMBsGA1UEDxMUUHJpdmF0
+# ZSBPcmdhbml6YXRpb24xEDAOBgNVBAUTBzMwMTQyNjcxCzAJBgNVBAYTAlVTMRMw
+# EQYDVQQRFAo5NTEzMS0yMDIxMRMwEQYDVQQIEwpDYWxpZm9ybmlhMREwDwYDVQQH
+# FAhTYW4gSm9zZTEWMBQGA1UECRQNMjIxMSBOIDFzdCBTdDEVMBMGA1UEChQMUGF5
+# UGFsLCBJbmMuMRowGAYDVQQLFBFQYXlQYWwgUHJvZHVjdGlvbjEXMBUGA1UEAxQO
+# d3d3LnBheXBhbC5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCd
+# szetUP2zRUbaN1vHuX9WV2mMq0IIVQ5NX2kpFCwBYc4vwW/CHiMr+dgs8lDduCfH
+# 5uxhyRxKtJa6GElIIiP8qFB5HFWf1uUgoDPC1he4HaxUkowCnVEqjEowOy9R9Cr4
+# yyrmqmMEDccVsx4d3dOY2JF1FrLDHT7qH/GCBnyYw+nZJ88ci6HqnVJiNM+NX/D/
+# d7Y3r3V1bp7y1DaJwK/z/uMwNCC+lcM59w+nwAvLutgCW6WitFHMB+HpSsOSJlIZ
+# ydpj0Ox+javRR1FIdhRUFMK4wwcbD8PvULi1gM+sYsJIzP0mHDlhWRIDImG1zmy2
+# x7ZLp0HA5WayjI5aSn9fAgMBAAGjggHzMIIB7zAJBgNVHRMEAjAAMB0GA1UdDgQW
+# BBQxqt0MVbSO4lWE5aB52xc8nEq5RTALBgNVHQ8EBAMCBaAwQgYDVR0fBDswOTA3
+# oDWgM4YxaHR0cDovL0VWU2VjdXJlLWNybC52ZXJpc2lnbi5jb20vRVZTZWN1cmUy
+# MDA2LmNybDBEBgNVHSAEPTA7MDkGC2CGSAGG+EUBBxcGMCowKAYIKwYBBQUHAgEW
+# HGh0dHBzOi8vd3d3LnZlcmlzaWduLmNvbS9ycGEwHQYDVR0lBBYwFAYIKwYBBQUH
+# AwEGCCsGAQUFBwMCMB8GA1UdIwQYMBaAFPyKULqeuSVae1WFT5UAY4/pWGtDMHwG
+# CCsGAQUFBwEBBHAwbjAtBggrBgEFBQcwAYYhaHR0cDovL0VWU2VjdXJlLW9jc3Au
+# dmVyaXNpZ24uY29tMD0GCCsGAQUFBzAChjFodHRwOi8vRVZTZWN1cmUtYWlhLnZl
+# cmlzaWduLmNvbS9FVlNlY3VyZTIwMDYuY2VyMG4GCCsGAQUFBwEMBGIwYKFeoFww
+# WjBYMFYWCWltYWdlL2dpZjAhMB8wBwYFKw4DAhoEFEtruSiWBgy70FI4mymsSweL
+# IQUYMCYWJGh0dHA6Ly9sb2dvLnZlcmlzaWduLmNvbS92c2xvZ28xLmdpZjANBgkq
+# hkiG9w0BAQUFAAOCAQEAisdjAvky8ehg4A0J3ED6+yR0BU77cqtrLUKqzaLcLL/B
+# wuj8gErM8LLaWMGM/FJcoNEUgSkMI3/Qr1YXtXFvdqo3urqMhi/SsuUJU85Gnoxr
+# Vr0rWoBqOOnmcsVEgtYeusK0sQbxq5JlE1eq9xqYZrKuOuA/8JS1V7Ss1iFrtA5i
+# pwotaEK3k5NEJOQh9/Zm+fy1vZfUyyX+iVSlmyFHC4bzu2DlzZln3UzjBJeXoEfe
+# YjQyLpdUhUhuPslV1qs+Bmi6O+e6htDHvD05wUaRzk6vsPcEQ3EqsPbdpLgejb5p
+# 9YDR12XLZeQjO1uiunCsJkDIf9/5Mqpu57pw8v1QNA==
+# -----END CERTIFICATE-----
+# CERT
+# 
+# push @certificates, <<'CERT';
+# -----BEGIN CERTIFICATE-----
+# MIIF9zCCBN+gAwIBAgIQE793e1MYa7/UOM7AWAq1djANBgkqhkiG9w0BAQUFADCB
+# ujELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMR8wHQYDVQQL
+# ExZWZXJpU2lnbiBUcnVzdCBOZXR3b3JrMTswOQYDVQQLEzJUZXJtcyBvZiB1c2Ug
+# YXQgaHR0cHM6Ly93d3cudmVyaXNpZ24uY29tL3JwYSAoYykwNjE0MDIGA1UEAxMr
+# VmVyaVNpZ24gQ2xhc3MgMyBFeHRlbmRlZCBWYWxpZGF0aW9uIFNTTCBDQTAeFw0x
+# MjA3MjUwMDAwMDBaFw0xNDA3MjYyMzU5NTlaMIIBDTETMBEGCysGAQQBgjc8AgED
+# EwJVUzEZMBcGCysGAQQBgjc8AgECEwhEZWxhd2FyZTEdMBsGA1UEDxMUUHJpdmF0
+# ZSBPcmdhbml6YXRpb24xEDAOBgNVBAUTBzMwMTQyNjcxCzAJBgNVBAYTAlVTMRMw
+# EQYDVQQRFAo5NTEzMS0yMDIxMRMwEQYDVQQIEwpDYWxpZm9ybmlhMREwDwYDVQQH
+# FAhTYW4gSm9zZTEWMBQGA1UECRQNMjIxMSBOIDFzdCBTdDEVMBMGA1UEChQMUGF5
+# UGFsLCBJbmMuMRgwFgYDVQQLFA9Ib3N0aW5nIFN1cHBvcnQxFzAVBgNVBAMUDnd3
+# dy5wYXlwYWwuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAppUu
+# PoT6YFWB8pFt8zRlOsXR9oiqkFI4QNwUw2P4n9XKsecMr6N41dbbKYz6jo1iwQRF
+# d1bF+Jhc8Me9LhSugvGmN0idSZkLKyGSC+npiVki28NBu7/bHjdM8A3Soj6r8z0w
+# VmhA7nyd0icIcPvtyK1lUA3oBw96B+RpA2q5WWXFkpFS7b0827rnJSy8Ymdmb3nb
+# 7I2vMLNl+EP1oy6cXL+6hqRun7dJ2hBhf+PbXn82AOWry6kdaMh8lS7GaFhVi+3e
+# 4MqBq7aAxB3dHTT0FE0nrcGDUKLi1G0mNZ3MC8kE73Gw4LOWbRSOwHwM6cKSYROJ
+# LW5h4RRoDumqqBcRLwIDAQABo4IBoTCCAZ0wGQYDVR0RBBIwEIIOd3d3LnBheXBh
+# bC5jb20wCQYDVR0TBAIwADAdBgNVHQ4EFgQU1jn61Uw9IMzAhBDGhhRQ272uHxgw
+# DgYDVR0PAQH/BAQDAgWgMEIGA1UdHwQ7MDkwN6A1oDOGMWh0dHA6Ly9FVlNlY3Vy
+# ZS1jcmwudmVyaXNpZ24uY29tL0VWU2VjdXJlMjAwNi5jcmwwRAYDVR0gBD0wOzA5
+# BgtghkgBhvhFAQcXBjAqMCgGCCsGAQUFBwIBFhxodHRwczovL3d3dy52ZXJpc2ln
+# bi5jb20vY3BzMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggrBgEFBQcDAjAfBgNVHSME
+# GDAWgBT8ilC6nrklWntVhU+VAGOP6VhrQzB8BggrBgEFBQcBAQRwMG4wLQYIKwYB
+# BQUHMAGGIWh0dHA6Ly9FVlNlY3VyZS1vY3NwLnZlcmlzaWduLmNvbTA9BggrBgEF
+# BQcwAoYxaHR0cDovL0VWU2VjdXJlLWFpYS52ZXJpc2lnbi5jb20vRVZTZWN1cmUy
+# MDA2LmNlcjANBgkqhkiG9w0BAQUFAAOCAQEAUuBmKY9TPpsM7OYaP6lu1Vu+koMp
+# vjr6rtj1CRqi3/LMRQv2IBiZgcvhJ4MtHlXlLX4/AZD7SlLi4ufPlcVCms7I53To
+# QcfdkDxjCPJ87yswfUWsrs/2r4I8Ov11hjEqrHtKYFeNylOEwY3ebXdUP0dKzF7T
+# ojUnh2wrXCQ209jm6z+XP0f90C9SuTe93gAv1PUhYISdvmjxnCLe5+yu3maQB4dV
+# +IwWEw0icKMfxU848hF/X2wqXd6pelXnox2eAFgW/OYm7kNrUvJxyvI+1YXAoQOG
+# yV9cU3oSGzyTfllBTZWTzvPT1rzG40AL3OQXk8qgWUKfpEhsZVAnMBa2Xg==
+# -----END CERTIFICATE-----
+# CERT
+# 
+# push @certificates, <<'CERT';
+# -----BEGIN CERTIFICATE-----
+# MIIGFTCCBP2gAwIBAgIQNlFL9KRy51iD/qafxhevQDANBgkqhkiG9w0BAQUFADCB
+# ujELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMR8wHQYDVQQL
+# ExZWZXJpU2lnbiBUcnVzdCBOZXR3b3JrMTswOQYDVQQLEzJUZXJtcyBvZiB1c2Ug
+# YXQgaHR0cHM6Ly93d3cudmVyaXNpZ24uY29tL3JwYSAoYykwNjE0MDIGA1UEAxMr
+# VmVyaVNpZ24gQ2xhc3MgMyBFeHRlbmRlZCBWYWxpZGF0aW9uIFNTTCBDQTAeFw0x
+# MzA2MjAwMDAwMDBaFw0xNTA0MDIyMzU5NTlaMIIBCTETMBEGCysGAQQBgjc8AgED
+# EwJVUzEZMBcGCysGAQQBgjc8AgECEwhEZWxhd2FyZTEdMBsGA1UEDxMUUHJpdmF0
+# ZSBPcmdhbml6YXRpb24xEDAOBgNVBAUTBzMwMTQyNjcxCzAJBgNVBAYTAlVTMRMw
+# EQYDVQQRFAo5NTEzMS0yMDIxMRMwEQYDVQQIEwpDYWxpZm9ybmlhMREwDwYDVQQH
+# FAhTYW4gSm9zZTEWMBQGA1UECRQNMjIxMSBOIDFzdCBTdDEVMBMGA1UEChQMUGF5
+# UGFsLCBJbmMuMRQwEgYDVQQLFAtDRE4gU3VwcG9ydDEXMBUGA1UEAxQOd3d3LnBh
+# eXBhbC5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDZje1RuIc0
+# ZTQmFw9evOsbre5ARBELvpAh9zVIgemHpQtECv0D8IUaYA9adxCdfw7L4kh6hCnK
+# zpUdVMyIAZJmJJHiGLdpPPN5NDQdA7KUjfWXWmXGnmiH17afV0NkJkh2MXEAZyQs
+# bnd8BWP740X7SDFemI6FVnjbH8JAE9ItOCOcISghdzblXafVGbrshqbXlYWCYfKR
+# o3Y606vmgR9hVROYWgqIogdh8SO9injq/wtjzNGFRZvShVGuUCxrN3MLgPQ/MMk1
+# Aj2J9eavxIu9Y6cPMO3cGQGNncsUG4PcaIaTGhA5rKLE8hgPlngswrFt8KLbc7MD
+# xq3rCwfSpuAzAgMBAAGjggHDMIIBvzA7BgNVHREENDAygg53d3cucGF5cGFsLmNv
+# bYISaGlzdG9yeS5wYXlwYWwuY29tggx0LnBheXBhbC5jb20wCQYDVR0TBAIwADAO
+# BgNVHQ8BAf8EBAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMEQG
+# A1UdIAQ9MDswOQYLYIZIAYb4RQEHFwYwKjAoBggrBgEFBQcCARYcaHR0cHM6Ly93
+# d3cudmVyaXNpZ24uY29tL2NwczAdBgNVHQ4EFgQUGApL2hPrOnyphg7eRbdMj1CZ
+# oacwHwYDVR0jBBgwFoAU/IpQup65JVp7VYVPlQBjj+lYa0MwQgYDVR0fBDswOTA3
+# oDWgM4YxaHR0cDovL0VWU2VjdXJlLWNybC52ZXJpc2lnbi5jb20vRVZTZWN1cmUy
+# MDA2LmNybDB8BggrBgEFBQcBAQRwMG4wLQYIKwYBBQUHMAGGIWh0dHA6Ly9FVlNl
+# Y3VyZS1vY3NwLnZlcmlzaWduLmNvbTA9BggrBgEFBQcwAoYxaHR0cDovL0VWU2Vj
+# dXJlLWFpYS52ZXJpc2lnbi5jb20vRVZTZWN1cmUyMDA2LmNlcjANBgkqhkiG9w0B
+# AQUFAAOCAQEAOEWwhuTokV821X0QOG+dhhG6+byaz4exGrvrwyvN90BXPiuqN4Me
+# alagNOhVqVcAv73XufXrX/CzYsJtL++4UZeJl2ysjxyYA7kpjhfwq51RYz6iOlKF
+# DaxNLYKaY+cmA+cflvkiqxigOZnKxyzl2Jp0ttobSLGGMvnXW7BI6fhdZfLe32g4
+# MesCwybF7PYDixvIe6/cW1TUcg5Vs3ZOhMUde4LFlmUDpMZ/HX8ffQ8esVN+sgIh
+# y2mt5QRfmWiJmazmAZIaAAgfF/HJW9DuSJbjylrHklkrbip20iOlEbomy5Eq9If7
+# O7ugV9tPvj01jhp3LXSQH9KDSo0QXD0a6g==
+# -----END CERTIFICATE-----
+# CERT
+# 
+# push @certificates, <<'CERT';
+# -----BEGIN CERTIFICATE-----
+# MIIF+TCCBOGgAwIBAgIQJ5YBtzGVFcWhgQF5HesilzANBgkqhkiG9w0BAQUFADCB
+# ujELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMR8wHQYDVQQL
+# ExZWZXJpU2lnbiBUcnVzdCBOZXR3b3JrMTswOQYDVQQLEzJUZXJtcyBvZiB1c2Ug
+# YXQgaHR0cHM6Ly93d3cudmVyaXNpZ24uY29tL3JwYSAoYykwNjE0MDIGA1UEAxMr
+# VmVyaVNpZ24gQ2xhc3MgMyBFeHRlbmRlZCBWYWxpZGF0aW9uIFNTTCBDQTAeFw0x
+# MzAxMTAwMDAwMDBaFw0xNTA0MDIyMzU5NTlaMIIBDzETMBEGCysGAQQBgjc8AgED
+# EwJVUzEZMBcGCysGAQQBgjc8AgECEwhEZWxhd2FyZTEdMBsGA1UEDxMUUHJpdmF0
+# ZSBPcmdhbml6YXRpb24xEDAOBgNVBAUTBzMwMTQyNjcxCzAJBgNVBAYTAlVTMRMw
+# EQYDVQQRFAo5NTEzMS0yMDIxMRMwEQYDVQQIEwpDYWxpZm9ybmlhMREwDwYDVQQH
+# FAhTYW4gSm9zZTEWMBQGA1UECRQNMjIxMSBOIDFzdCBTdDEVMBMGA1UEChQMUGF5
+# UGFsLCBJbmMuMRowGAYDVQQLFBFQYXlQYWwgUHJvZHVjdGlvbjEXMBUGA1UEAxQO
+# d3d3LnBheXBhbC5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDX
+# DWQiB+XDFkua7H7qtwaxDDrkNiR376if+UNgRcK/0DjG6oCJGWxVvzgJ5dIlab7s
+# hM1QpKXmpxM+vzUwQE441t1yZXQdsG5U+pAXoCki3gb9ZIJAvSy+KVIzs1BLR38u
+# /WFunABQloY0Uw+9Q1rrul67MnCeQ+Y5CybIXy6UXSgn1tssLIK5EKO26vOj7t6O
+# 3+ouNfUPAIozv56sEOmlQB25BGqafEVn+MHIyl1Ks4toG3Im97f+5LoBnI6tvdVM
+# /kndq5tIkTQBhY8vKKPajQei8odD75eP7SYDQyrNeGO7C5j71GOa6EILv+kqyMqs
+# btNNjngHeQmEDHjg1VEZAgMBAAGjggGhMIIBnTAZBgNVHREEEjAQgg53d3cucGF5
+# cGFsLmNvbTAJBgNVHRMEAjAAMB0GA1UdDgQWBBTIhlfkmAqzuJ2oqOPsGBtJ6sn2
+# 2TAOBgNVHQ8BAf8EBAMCBaAwQgYDVR0fBDswOTA3oDWgM4YxaHR0cDovL0VWU2Vj
+# dXJlLWNybC52ZXJpc2lnbi5jb20vRVZTZWN1cmUyMDA2LmNybDBEBgNVHSAEPTA7
+# MDkGC2CGSAGG+EUBBxcGMCowKAYIKwYBBQUHAgEWHGh0dHBzOi8vd3d3LnZlcmlz
+# aWduLmNvbS9jcHMwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMB8GA1Ud
+# IwQYMBaAFPyKULqeuSVae1WFT5UAY4/pWGtDMHwGCCsGAQUFBwEBBHAwbjAtBggr
+# BgEFBQcwAYYhaHR0cDovL0VWU2VjdXJlLW9jc3AudmVyaXNpZ24uY29tMD0GCCsG
+# AQUFBzAChjFodHRwOi8vRVZTZWN1cmUtYWlhLnZlcmlzaWduLmNvbS9FVlNlY3Vy
+# ZTIwMDYuY2VyMA0GCSqGSIb3DQEBBQUAA4IBAQBe0V9KFlzAPdMxrTrBe8QHEICg
+# xUkz8DQG3EN8WpBXC2Vaucd/lNDELv6pCmn6Ejg8UwRTNWQRWbDQxa4kcgkkDGAL
+# CkglOXtqWHyA9nCZftjRSRDpswH0KlbSx1fES1zrlvWbhJzejuI+AO5E1HMKm4rO
+# Kk0O/l78spIffhU6SurTk7WGbr/YzCB2YBC9L0qYFcNUcJBMU5LKV/4XXWMzVQW0
+# aPyuvAIIrmXLRtXxxi7TlBOxeUsXAz/DQt72FJnHllzSkDEPEG11+xjAL6i33hzi
+# SZeqm2fJ6m8lDPoDdSp5TlSzkRRZQ0FcAc8BAdxfS1dd34Fa+6p59HM6XM6J
+# -----END CERTIFICATE-----
+# CERT
+
+# added to 0.12 on 2014.04.19
+push @certificates, <<'CERT';
 -----BEGIN CERTIFICATE-----
-MIIGSzCCBTOgAwIBAgIQLjOHT2/i1B7T//819qTJGDANBgkqhkiG9w0BAQUFADCB
+MIIGCDCCBPCgAwIBAgIQCDTkU9Q6aFcjr/uxM85FfDANBgkqhkiG9w0BAQUFADCB
 ujELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMR8wHQYDVQQL
 ExZWZXJpU2lnbiBUcnVzdCBOZXR3b3JrMTswOQYDVQQLEzJUZXJtcyBvZiB1c2Ug
 YXQgaHR0cHM6Ly93d3cudmVyaXNpZ24uY29tL3JwYSAoYykwNjE0MDIGA1UEAxMr
 VmVyaVNpZ24gQ2xhc3MgMyBFeHRlbmRlZCBWYWxpZGF0aW9uIFNTTCBDQTAeFw0x
-MTAzMjMwMDAwMDBaFw0xMzA0MDEyMzU5NTlaMIIBDzETMBEGCysGAQQBgjc8AgED
+NDA0MTUwMDAwMDBaFw0xNTA0MDIyMzU5NTlaMIIBCTETMBEGCysGAQQBgjc8AgED
 EwJVUzEZMBcGCysGAQQBgjc8AgECEwhEZWxhd2FyZTEdMBsGA1UEDxMUUHJpdmF0
 ZSBPcmdhbml6YXRpb24xEDAOBgNVBAUTBzMwMTQyNjcxCzAJBgNVBAYTAlVTMRMw
 EQYDVQQRFAo5NTEzMS0yMDIxMRMwEQYDVQQIEwpDYWxpZm9ybmlhMREwDwYDVQQH
 FAhTYW4gSm9zZTEWMBQGA1UECRQNMjIxMSBOIDFzdCBTdDEVMBMGA1UEChQMUGF5
-UGFsLCBJbmMuMRowGAYDVQQLFBFQYXlQYWwgUHJvZHVjdGlvbjEXMBUGA1UEAxQO
-d3d3LnBheXBhbC5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCd
-szetUP2zRUbaN1vHuX9WV2mMq0IIVQ5NX2kpFCwBYc4vwW/CHiMr+dgs8lDduCfH
-5uxhyRxKtJa6GElIIiP8qFB5HFWf1uUgoDPC1he4HaxUkowCnVEqjEowOy9R9Cr4
-yyrmqmMEDccVsx4d3dOY2JF1FrLDHT7qH/GCBnyYw+nZJ88ci6HqnVJiNM+NX/D/
-d7Y3r3V1bp7y1DaJwK/z/uMwNCC+lcM59w+nwAvLutgCW6WitFHMB+HpSsOSJlIZ
-ydpj0Ox+javRR1FIdhRUFMK4wwcbD8PvULi1gM+sYsJIzP0mHDlhWRIDImG1zmy2
-x7ZLp0HA5WayjI5aSn9fAgMBAAGjggHzMIIB7zAJBgNVHRMEAjAAMB0GA1UdDgQW
-BBQxqt0MVbSO4lWE5aB52xc8nEq5RTALBgNVHQ8EBAMCBaAwQgYDVR0fBDswOTA3
-oDWgM4YxaHR0cDovL0VWU2VjdXJlLWNybC52ZXJpc2lnbi5jb20vRVZTZWN1cmUy
-MDA2LmNybDBEBgNVHSAEPTA7MDkGC2CGSAGG+EUBBxcGMCowKAYIKwYBBQUHAgEW
-HGh0dHBzOi8vd3d3LnZlcmlzaWduLmNvbS9ycGEwHQYDVR0lBBYwFAYIKwYBBQUH
-AwEGCCsGAQUFBwMCMB8GA1UdIwQYMBaAFPyKULqeuSVae1WFT5UAY4/pWGtDMHwG
-CCsGAQUFBwEBBHAwbjAtBggrBgEFBQcwAYYhaHR0cDovL0VWU2VjdXJlLW9jc3Au
-dmVyaXNpZ24uY29tMD0GCCsGAQUFBzAChjFodHRwOi8vRVZTZWN1cmUtYWlhLnZl
-cmlzaWduLmNvbS9FVlNlY3VyZTIwMDYuY2VyMG4GCCsGAQUFBwEMBGIwYKFeoFww
-WjBYMFYWCWltYWdlL2dpZjAhMB8wBwYFKw4DAhoEFEtruSiWBgy70FI4mymsSweL
-IQUYMCYWJGh0dHA6Ly9sb2dvLnZlcmlzaWduLmNvbS92c2xvZ28xLmdpZjANBgkq
-hkiG9w0BAQUFAAOCAQEAisdjAvky8ehg4A0J3ED6+yR0BU77cqtrLUKqzaLcLL/B
-wuj8gErM8LLaWMGM/FJcoNEUgSkMI3/Qr1YXtXFvdqo3urqMhi/SsuUJU85Gnoxr
-Vr0rWoBqOOnmcsVEgtYeusK0sQbxq5JlE1eq9xqYZrKuOuA/8JS1V7Ss1iFrtA5i
-pwotaEK3k5NEJOQh9/Zm+fy1vZfUyyX+iVSlmyFHC4bzu2DlzZln3UzjBJeXoEfe
-YjQyLpdUhUhuPslV1qs+Bmi6O+e6htDHvD05wUaRzk6vsPcEQ3EqsPbdpLgejb5p
-9YDR12XLZeQjO1uiunCsJkDIf9/5Mqpu57pw8v1QNA==
+UGFsLCBJbmMuMRQwEgYDVQQLFAtDRE4gU3VwcG9ydDEXMBUGA1UEAxQOd3d3LnBh
+eXBhbC5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC+rkZNmW5t
+bDVLiDI4u9zQCZXQmuQ2558KsPLX0jBiAx+txvRtEIT3eRu8dMCo44L+1AqTLj1L
+EiStrV9d7RzJHG8Te+LBJU5GX087LlrLwVq0gs+to2XohjO17R14mafH1foQLvsR
+TiNYBpaHcXVRc4wP9Mp8j5EleRPcsPDeCAcBC2TMV2oShmIXPl25Yj1Yeypu9qYw
+QQL87GRyM9XVP2ttl/PBYb84O6tBR9TCA9c7WVed4aEq1njog1093apdF/2U1uV6
+7wJjxqPGLVszCIv1pQO0/vIdq79enrh4OSAraGFP5JnyqsJNS0jLaMIQP/qausVq
+U48i89fJ7aTVAgMBAAGjggG2MIIBsjBnBgNVHREEYDBegg53d3cucGF5cGFsLmNv
+bYISaGlzdG9yeS5wYXlwYWwuY29tggx0LnBheXBhbC5jb22CDGMucGF5cGFsLmNv
+bYIOdG1zLnBheXBhbC5jb22CDHRtcy5lYmF5LmNvbTAJBgNVHRMEAjAAMA4GA1Ud
+DwEB/wQEAwIFoDAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwZgYDVR0g
+BF8wXTBbBgtghkgBhvhFAQcXBjBMMCMGCCsGAQUFBwIBFhdodHRwczovL2Quc3lt
+Y2IuY29tL2NwczAlBggrBgEFBQcCAjAZGhdodHRwczovL2Quc3ltY2IuY29tL3Jw
+YTAfBgNVHSMEGDAWgBT8ilC6nrklWntVhU+VAGOP6VhrQzArBgNVHR8EJDAiMCCg
+HqAchhpodHRwOi8vc2Euc3ltY2IuY29tL3NhLmNybDBXBggrBgEFBQcBAQRLMEkw
+HwYIKwYBBQUHMAGGE2h0dHA6Ly9zYS5zeW1jZC5jb20wJgYIKwYBBQUHMAKGGmh0
+dHA6Ly9zYS5zeW1jYi5jb20vc2EuY3J0MA0GCSqGSIb3DQEBBQUAA4IBAQB2CKtk
+9vQL5IG9WbI+pPz1A3UEWWq1/hI0KgScic3L4TxsIDnU6m8nNH9iHEVyETnARaoq
+NVy2BuMIp48Ir4CyEM6lKFscSVUR62sqgMEJ7YJySMoZi+U0lDxQJndrGmO6b2PR
+WO0rHbenbgQlmcOUA5DsD0yTgzWG43CEDTzOr06AStORP1UzLx9nhy8JokHAEEos
+xIigb5Ms7zjSYcfs8zd9yTKlXB5IDoVsRyp/xjBewvYu3eNNrP/vSCbHUXRHMkYL
+zXoKXVvFje0XvN4JvOmTqXyFnIimg7zW5R8FEN+yT6LFlwCLV8cN58dXV4d9E59c
+XPfzzQCJDYWaonDa
 -----END CERTIFICATE-----
 CERT
-chomp($Cert);
 
-our $Certcontent = <<CERTCONTENT;
-Subject Name: /1.3.6.1.4.1.311.60.2.1.3=US/1.3.6.1.4.1.311.60.2.1.2=Delaware/businessCategory=Private Organization/serialNumber=3014267/C=US/postalCode=95131-2021/ST=California/L=San Jose/street=2211 N 1st St/O=PayPal, Inc./OU=PayPal Production/CN=www.paypal.com
+chomp(@certificates);
+
+my @cert_contents;
+# push @cert_contents, <<'CERTCONTENT';
+# Subject Name: /1.3.6.1.4.1.311.60.2.1.3=US/1.3.6.1.4.1.311.60.2.1.2=Delaware/businessCategory=Private Organization/serialNumber=3014267/C=US/postalCode=95131-2021/ST=California/L=San Jose/street=2211 N 1st St/O=PayPal, Inc./OU=PayPal Production/CN=www.paypal.com
+# Issuer  Name: /C=US/O=VeriSign, Inc./OU=VeriSign Trust Network/OU=Terms of use at https://www.verisign.com/rpa (c)06/CN=VeriSign Class 3 Extended Validation SSL CA
+# CERTCONTENT
+# 
+# push @cert_contents, <<'CERTCONTENT';
+# Subject Name: /1.3.6.1.4.1.311.60.2.1.3=US/1.3.6.1.4.1.311.60.2.1.2=Delaware/businessCategory=Private Organization/serialNumber=3014267/C=US/postalCode=95131-2021/ST=California/L=San Jose/street=2211 N 1st St/O=PayPal, Inc./OU=Hosting Support/CN=www.paypal.com
+# Issuer  Name: /C=US/O=VeriSign, Inc./OU=VeriSign Trust Network/OU=Terms of use at https://www.verisign.com/rpa (c)06/CN=VeriSign Class 3 Extended Validation SSL CA
+# CERTCONTENT
+# 
+# push @cert_contents, <<'CERTCONTENT';
+# Subject Name: /1.3.6.1.4.1.311.60.2.1.3=US/1.3.6.1.4.1.311.60.2.1.2=Delaware/2.5.4.15=Private Organization/serialNumber=3014267/C=US/postalCode=95131-2021/ST=California/L=San Jose/streetAddress=2211 N 1st St/O=PayPal, Inc./OU=PayPal Production/CN=www.paypal.com
+# Issuer  Name: /C=US/O=VeriSign, Inc./OU=VeriSign Trust Network/OU=Terms of use at https://www.verisign.com/rpa (c)06/CN=VeriSign Class 3 Extended Validation SSL CA
+# CERTCONTENT
+# 
+# push @cert_contents, <<'CERTCONTENT';
+# Subject Name: /1.3.6.1.4.1.311.60.2.1.3=US/1.3.6.1.4.1.311.60.2.1.2=Delaware/2.5.4.15=Private Organization/serialNumber=3014267/C=US/postalCode=95131-2021/ST=California/L=San Jose/streetAddress=2211 N 1st St/O=PayPal, Inc./OU=Hosting Support/CN=www.paypal.com
+# Issuer  Name: /C=US/O=VeriSign, Inc./OU=VeriSign Trust Network/OU=Terms of use at https://www.verisign.com/rpa (c)06/CN=VeriSign Class 3 Extended Validation SSL CA
+# CERTCONTENT
+# 
+push @cert_contents, <<'CERTCONTENT';
+Subject Name: /1.3.6.1.4.1.311.60.2.1.3=US/1.3.6.1.4.1.311.60.2.1.2=Delaware/businessCategory=Private Organization/serialNumber=3014267/C=US/postalCode=95131-2021/ST=California/L=San Jose/street=2211 N 1st St/O=PayPal, Inc./OU=CDN Support/CN=www.paypal.com
 Issuer  Name: /C=US/O=VeriSign, Inc./OU=VeriSign Trust Network/OU=Terms of use at https://www.verisign.com/rpa (c)06/CN=VeriSign Class 3 Extended Validation SSL CA
 CERTCONTENT
-chomp($Certcontent);
 
+# push @cert_contents, <<'CERTCONTENT';
+# Subject Name: /1.3.6.1.4.1.311.60.2.1.3=US/1.3.6.1.4.1.311.60.2.1.2=Delaware/2.5.4.15=Private Organization/serialNumber=3014267/C=US/postalCode=95131-2021/ST=California/L=San Jose/streetAddress=2211 N 1st St/O=PayPal, Inc./OU=CDN Support/CN=www.paypal.com
+# Issuer  Name: /C=US/O=VeriSign, Inc./OU=VeriSign Trust Network/OU=Terms of use at https://www.verisign.com/rpa (c)06/CN=VeriSign Class 3 Extended Validation SSL CA
+# CERTCONTENT
+
+chomp(@cert_contents);
 
 # creates new PayPal object.  Assigns an id if none is provided.
 sub new {
@@ -120,15 +302,15 @@ sub button {
         @_,
     );
     my $key;
-    my $content = qq{<form method="post" action="$self->{address}" enctype="multipart/form-data">};
+    my $content = qq{<form method="post" action="$self->{address}" enctype="multipart/form-data">\n};
 
     foreach my $param (sort keys %buttonparam) {
         next if not defined $buttonparam{$param};
         next if $param eq 'button_image';
-        $content .= qq{<input type="hidden" name="$param" value="$buttonparam{$param}" />};
+        $content .= qq{<input type="hidden" name="$param" value="$buttonparam{$param}" />\n};
     }
-    $content .= $buttonparam{button_image};
-    $content .= qq{</form>};
+    $content .= "$buttonparam{button_image}\n";
+    $content .= qq{</form>\n};
 
     return $content;
 }
@@ -180,6 +362,8 @@ sub postpaypal {
                                          '',
                                          Net::SSLeay::make_form(%$query));
 
+    return (wantarray ? (undef, "No PayPal cert found") : undef)
+        unless $ppcert;
 
     my $ppx509 = Net::SSLeay::PEM_get_string_X509($ppcert);
     my $ppcertcontent =
@@ -193,9 +377,38 @@ sub postpaypal {
 
     chomp $ppx509;
     chomp $ppcertcontent;
-    return (wantarray ? (undef, "PayPal cert failed to match: $ppx509\n$Cert") : undef)
-        unless $Cert eq $ppx509;
-    return (wantarray ? (undef, "PayPal cert contents failed to match $ppcertcontent") : undef)        unless $ppcertcontent eq "$Certcontent";
+
+	my @certs = @certificates;
+	if ($Cert) {
+		# TODO added in 0.12
+		warn "The global variable \$Cert is deprecated and will be removed soon. Pass a certificate to the constructor using the 'cert' parameter.\n";
+		push @certs, $Cert;
+	}
+	my @cert_cont = @cert_contents;
+	if ($Certcontent) {
+		# TODO added in 0.12
+		warn "The global variable \$Certcontent is deprecated and will be removed soon. Pass a certificate to the constructor using the 'certcontent' parameter.\n";
+		push @cert_cont, $Certcontent;
+	}
+
+	if ($self->{addcert}) {
+		push @certs, $self->{cert};
+	}
+	if ($self->{addcertcontent}) {
+		push @certs, $self->{certcontent};
+	}
+
+	if ($self->{cert}) {
+		@certs = $self->{cert};
+	}
+	if ($self->{certcontent}) {
+		@certs = $self->{certcontent};
+	}
+
+    return (wantarray ? (undef, "PayPal cert failed to match: $ppx509") : undef)
+        unless grep {$_ eq $ppx509} @certs;
+    return (wantarray ? (undef, "PayPal cert contents failed to match $ppcertcontent") : undef)
+        unless grep { $_ eq $ppcertcontent } @cert_cont;
     return (wantarray ? (undef, 'PayPal says transaction INVALID') : undef)
         if $page eq 'INVALID';
     return (wantarray ? (1, 'PayPal says transaction VERIFIED') : 1)
@@ -261,9 +474,9 @@ button used above include something like the following in your
   my $money = $query{payment_gross};
   my $paystatus = $query{payment_status};
 
-check if paystatus eq 'Completed'
-check if $money is the ammount you expected
-save payment status information to store as $id
+Check if paystatus eq 'Completed'.
+Check if $money is the amount you expected.
+Save payment status information to store as $id.
 
 
 To tell the user if their payment succeeded or not, use something like
@@ -277,6 +490,10 @@ PayPal button.
   #get payment status from store for $id
   #return payment status to customer
 
+In order to use the sandbox provided by PayPal, you can provide the address of the sandbox
+in the constructor:
+
+  my $pp = Business::PayPal->new( address  => 'https://www.sandbox.paypal.com/cgi-bin/webscr' );
 
 =head1 DESCRIPTION
 
@@ -299,12 +516,22 @@ https://www.paypal.com/cgi-bin/webscr
 
 =item cert
 
-The x509 certificate for I<address>, see source for default
+The x509 certificate for I<address>, see source for default.
 
 =item certcontent
 
 The contents of the x509 certificate I<cert>, see source for
-default
+default.
+
+=item addcert
+
+The x509 certificate for I<address>.
+This is added to the default values.
+
+=item addcertcontent
+
+The contents of the x509 certificate I<cert>,
+This is added to the default values.
 
 =back
 
@@ -519,7 +746,7 @@ response.
 
 =head1 MAINTAINER
 
-Gabor Szabo, E<lt>gabor@szabgab.comE<gt>
+Gabor Szabo, L<http://szabgab.com/>, L<http://perlmaven.com/>
 
 phred, E<lt>fred@redhotpenguin.comE<gt>
 
@@ -531,10 +758,9 @@ mock, E<lt>mock@obscurity.orgE<gt>
 
 L<CGI>, L<perl>, L<Apache::Session>.
 
-https://www.cansecwest.com/register.cgi is currently using this module
-to do conference registrations.  If you wish to see it working, just
-fill out the forms until you get to the PayPal button, click on the button,
-and then cancel before paying (or pay, and come to CanSecWest :-) ).
+Explanation of the fields: L<http://www.paypalobjects.com/en_US/ebook/subscriptions/html.html>
+See also in the pdf here: L<https://www.paypal.com/cgi-bin/webscr?cmd=p/xcl/rec/subscr-manual-outside>
+
 
 =head1 LICENSE
 
