@@ -490,6 +490,10 @@ PayPal button.
   #get payment status from store for $id
   #return payment status to customer
 
+In order to use the sandbox provided by PayPal, you can provide the address of the sandbox
+in the constructor:
+
+  my $pp = Business::PayPal->new( address  => 'https://www.sandbox.paypal.com/cgi-bin/webscr' );
 
 =head1 DESCRIPTION
 

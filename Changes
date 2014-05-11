@@ -1,5 +1,7 @@
 Revision history for Perl extension Business::PayPal.
 
+    - Documentation and test for changing the address to the sandbox.
+
 0.13 2014-05-11
     - Comment out old certificates. Only include the one returned by getppcert.pl
 

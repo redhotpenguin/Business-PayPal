@@ -5,7 +5,7 @@ use Test::More;
 use Business::PayPal;
 
 my $n = 1;
-plan tests => 9 + 2*$n + 6;
+plan tests => 9 + 3*$n + 7;
 
 
 my $pp1 = Business::PayPal->new();
@@ -50,13 +50,14 @@ for (1 .. $n) {
 	);
 	#diag $button;
 
+	like $button, qr{action="https://www.paypal.com/cgi-bin/webscr"}, 'address';
 	like $button, qr{foo\@bar\.com}, 'email';
 	like $button, qr{<input type="hidden" name="amount" value="99.99" />}, 'amount';
 }
 
 
 {
-	my $pp = Business::PayPal->new();
+	my $pp = Business::PayPal->new( address  => 'https://www.sandbox.paypal.com/cgi-bin/webscr' );
 	my $button = $pp->button(
 		cmd            => '_xclick-subscriptions',
 		business       => 'foo@bar.com',
@@ -73,6 +74,7 @@ for (1 .. $n) {
 		notify_url     => 'http://bar.com/hello_water',
 	);
 	#diag $button;
+	like $button, qr{action="https://www.sandbox.paypal.com/cgi-bin/webscr"}, 'address';
 	like $button, qr{foo\@bar\.com}, 'email';
 	unlike $button, qr{amount}, 'no amount when recurring';
 	like $button, qr{<input type="hidden" name="a3" value="9" />};
